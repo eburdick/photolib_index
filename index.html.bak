@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<!-- Web Photo Album index page
+
+This page is mostly created by javascript code using and html template.
+The text and thumbnails are specified by and XML file called entries.xml
+and style (colors, sizes) are defined in stylesheed.css. All files including
+this html file, entries.xml, stylesheet.css, and the thumbnail image files 
+are in the same directory.
+
+The template elements are:
+
+- A page title placeholder paragraph. The title text is specified by the 
+XML tag <page_title>. The stytle of the title is set by the stylesheet.css
+file
+
+- A div with the id template_div, and three elements...
+  - A title paragraph
+  - A thumbnail image with an href link
+  - A description paragraph with an href link.
+Each of these three elements has an id so the script can find and modify
+it, and each has a corresponding tag in the xml file. The href link is the
+same for the thumbnail and the description and the link text has a tag
+in the xml file.
+
+The main program of the script sets up an XML request called xmlhttp and
+a function that gets called any time the XML request state changes. This
+function calls a function called buildPage() when the XML file is open
+and ready. The last two executable lines of the script calls the open
+method of the XML request object and sends the request for open to the 
+server.  If everything goes right, then the buildPage function will be
+called, which builds the page as follows...
+
+The page title placeholder is overwritten by the page title specified
+in the xml file.
+
+All of the elements in the template_div are overwritten with the 
+values specified inside of the first <entry> tag in the xml file, then
+the template_div is cloned and the clone is inserted just before the 
+original template_div. This process is repeated for all of the <entry> 
+tags in the xml file with the exception that the last time, the 
+template_div as modified is not cloned, but instead left in place as 
+the actual last entry.-->
+
+<html>
+    <head>
+        <!-- Link to css style sheet -->
+        <link rel="stylesheet" type="text/css" href="stylesheet.css"> 
+        
+        <link rel="icon" 
+      type="image/ico" 
+      href="favicon.ico">
+    </head>
+
+    <body>
+        <!-- Start the body with just a title paragraph placeholder.
+             This placeholder will be overwritten from the XML data file
+             by the script that creates the page. -->
+        <p class='page-title' id='page_title'>placeholder</p>
+        
+        <!-- this block of html is the template for each entry on the page. 
+             The script below will replace the placeholders with real data
+             for each entry...a title for the entry, the url for the entry,
+             used with both the thumbnail and the description,
+             a thumbnail, and description text -->
+
+        <div id="template_div">             
+            <p id="entry_title" class="thumb-title">entry_title_placeholder</p>
+            <a id="thumbnail" href="url_placeholder">    
+                <img 
+                    class="thumbnail"
+                    id="entry_thumbnail_image"
+                    src="thumbnail_file_placeholder.jpg"
+                    
+                      
+                >
+            </a>
+            <a id="description_link" href="url_placeholder"> 
+                <p id="entry_description" class="description">description_placeholder</p> 
+            </a>
+        </div>
+        
+        <!--
+        The following script reads the xml file that provides content for
+        the page and create the DOM elements for the page. The script begins
+        execution when the initial page is loaded by the browser.
+        -->
+        <script>
+            //Make an XMLHttpRequest object 
+            var xmlhttp = new XMLHttpRequest();
+            
+            //set up a callback for when the XMLHttpRequest object changes it readyState.
+            //This code is looking for a readState of 4 (request finished and response
+            //is ready) and an HTTP status of 200 (successful http request).  When these
+            //criterion are met, then the file can be read from the server to create the 
+            //XML document object. This is done by the loadXMLFile function, which takes
+            //the XMLHttpRequest object xmlhttp as an argument.
+            xmlhttp.onreadystatechange = function() 
+            {
+                if (this.readyState == 4 && this.status == 200) 
+                { 
+                    buildPage(this);
+                }
+            };            
+            // This function builds the page. It is called in response to the successful
+            // request of entries.xml, which defines the data to be put into the page's 
+            // elements. This function does the following:
+            //
+            // 1. Create the xmlDoc object from the XML file.
+            //
+            // 2. Get the title from xmlDoc and use it to modify the placeholder title
+            //    in the html code above.
+            //
+            // 3. For each entry,
+            //
+            //    a: traverse the xmlDoc to get the values for the title, 
+            //       url, thumbnail, and description and overwrite these values on the
+            //       placeholder html elements in template_div.
+            //
+            //    b: except for the last entry, clone template_div and insert the clone 
+            //       before the placeholder. In the case of of the last entry, the 
+            //       placeholder is now the last entry. 
+             
+            function buildPage(request_obj) 
+            {
+                // get the xml document from the request object, which at this point will have
+                // opened and parsed the XML file into an XML document object.
+                var xmlDoc = request_obj.responseXML;
+                
+                //Note we are working with two documents..."xmlDoc" which has been built from the
+                //xml file, and contains page_node, and "document," which is the html document 
+                //being built by this code, starting with the template html code above.
+                
+                //Method we use to get the actual text value of the tags in the xml file...
+                //First, we get the node of which the desired tag is a child.
+                //Then we use that node's getElementsByTagName method to get the node for our tag.
+                //Under that node there is a text node, which we get with the childNodes method.
+                //Then we get the actual text with the nodeValue method of the text node.
+                
+                //get the page node.  There is only one.  Everything else is its child
+                var page_node = xmlDoc.getElementsByTagName("page")[0];
+ 
+                //get the text from the xml page_title node
+                var page_title_text = page_node.getElementsByTagName("page_title")[0].childNodes[0].nodeValue;
+
+                // Set the html text for page title using its innerHTML method
+                var page_title = document.getElementById("page_title");
+                page_title.innerHTML = page_title_text;
+
+                //get the XML entry_nodes list and its length.
+                var entry_nodes = page_node.getElementsByTagName("entry");
+                var entry_count = entry_nodes.length;
+                
+                //index of the last entry is one less than the entry count
+                var last_entry_index = entry_count - 1;
+
+                //get the template div
+                var template_div = document.getElementById("template_div");
+                
+                //get the template elements we want to overwrite. We get them here because after
+                //we clone the template later, the clones will have duplicate ids, making it 
+                //harder to find these again.
+                var template_entry_title=document.getElementById("entry_title");
+                var template_thumbnail = document.getElementById("thumbnail");
+                var template_image=document.getElementById("entry_thumbnail_image");
+                var template_description_link = document.getElementById("description_link");
+                var template_description = document.getElementById("entry_description");
+
+                //loop through all of the XML entry nodes. For each, use the XML values of its children
+                //to update the values in the template html div, then clone the template and insert the 
+                //clone in front of the template. The template gets updated and cloned for each entry
+                //except the last one, because for that one, we just leave the template as the entry.
+                var entry_index;
+                var clone_div = []; //empty array to store the clone divs. One is added on each iteration
+                for (entry_index = 0; entry_index < entry_count; entry_index++)
+                {
+                    //get the text values of the current XML <entry>
+                    var entry_title = entry_nodes[entry_index].getElementsByTagName("title")[0].childNodes[0].nodeValue;
+                    var entry_url = entry_nodes[entry_index].getElementsByTagName("url")[0].childNodes[0].nodeValue;
+                    var entry_thumbnail_file = entry_nodes[entry_index].getElementsByTagName("thumbnail")[0].childNodes[0].nodeValue;
+                    var entry_description = entry_nodes[entry_index].getElementsByTagName("description")[0].childNodes[0].nodeValue;
+    
+                    //Update the html template with the values we just got from the XML file
+                    template_entry_title.innerHTML = entry_title;
+                    template_thumbnail.href = entry_url;
+                    template_image.src = entry_thumbnail_file;
+                    template_description_link.href = entry_url;
+                    template_description.innerHTML = entry_description;
+                    
+                    // Unless this is the last iteration, clone the template div and 
+                    // stick the clone before the template. At this point, the template will be the
+                    // last entry and can be overwritten in the next iteration. If this is the last
+                    // iteration, we are done and the template is used as the last entry.
+                    if (entry_index < last_entry_index)
+                    {
+                        clone_div.push(template_div.cloneNode(true));
+                        document.body.insertBefore(clone_div[entry_index],template_div);
+                    };
+                    
+                }; //end of entry_index for loop  
+                   
+            }; //end of function build_page()
+            
+            //set up an asynchronous GET request for the XML file, then send the request
+            //to the server. When the connection is good and the data is ready, then the
+            //loadXMLFile function above will be called.
+            xmlhttp.open("GET", "entries.xml", true); 
+            xmlhttp.send(); //send the request to the server.  
+         
+        </script>
+    </body>
+</html>

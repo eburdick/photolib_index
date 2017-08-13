@@ -1,0 +1,55 @@
+body
+{
+    background-color: #000022;   
+}
+.thumbnail
+{
+    /* Display the thumbnail as a block and
+       center it. margin: auto automatically
+       sets the right and left margins to be
+       the same*/
+    display: block;
+    margin: auto;
+    /* Set the thumbnail width to be a percentage
+       of the minimum of the browser window's 
+       height or width. Set the thumbnail height
+       to be 2/3 for the width. This results in
+       the thumbnails being scaled to the window
+       reasonably well */
+    width:60vmin;
+    height:40vmin;
+    /* Set no margin above or below the thumbnail
+       so the title and the description flow right
+       into it. */
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.description 
+{
+    color: Khaki;
+    font-family: "Arial";
+    text-align: center;
+    word-wrap: break-word;
+    font-size: 100%;
+    margin-top: 0px;
+}           
+.thumb-title 
+{
+    color: LemonChiffon;
+    font-family: "Arial";
+    margin: auto;
+    text-align: center;
+    font-size: 250%;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+.page-title 
+{
+    color: Yellow;
+    font-family: "Arial";
+    margin: auto;
+    text-align: center;
+    font-size: 250%;
+    margin-bottom: 30px; /* add some space below the page title */
+    margin-top: 0px;
+}
